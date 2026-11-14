@@ -2,57 +2,75 @@ package com.example;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
 public class PrimaryController {
 
-    @FXML private HBox mesaDoJogador;
-    @FXML private HBox mesaDoComputador;
-    @FXML private ImageView monte;
+    private Jogo jogo = new Jogo();
 
     @FXML private Label pontosMesa;
     @FXML private Label pontosJogador;
     @FXML private Label resultado;
+    @FXML private HBox mesaDoComputador;
+    @FXML private HBox mesaDoJogador;
+    @FXML private ImageView monte;
 
-    // private Jogo jogo;
-
-    public void turno(){
-
+    @FXML
+    public void initialize() {
+        novoJogo();
     }
 
-    public void atualizar(){
-        // pontosJogador.setText("Jogador: " + jogo.jogador.getPontos());
-        // pontosMesa.setText("Mesa: " + jogo.computador.getPontos());
-        
-        // mesaDoJogador.getChildren().clear();
-        // mesaDoComputador.getChildren().clear();
-
-        // jogo.jogador.getCartas().forEach((carta) -> mesaDoJogador.getChildren().add(imagemCarta(carta)));
-        // jogo.computador.getCartas().forEach((carta) -> mesaDoComputador.getChildren().add(imagemCarta(carta)));
-    }
-
-    public void novoJogo(){
-        // jogo = new Jogo();
-        // mesaDoJogador.getChildren().clear();
-        // mesaDoComputador.getChildren().clear();
-        // pontosJogador.setText("Jogador: 0");
-        // pontosMesa.setText("Mesa: 0");
-        // resultado.setText("");
-    }
-
-    public void pedirCarta(){
-       turno();
-    }
-
-    public void parar(){
-        // jogo.jogador.parar();
+    @FXML
+    public void novoJogo() {
+        jogo = new Jogo();
+        resultado.setText("");
         turno();
     }
-    
 
-    // private ImageView imagemCarta(Carta carta) {
-    //    return new ImageView(App.class.getResource(carta.imagePath()).toString());
-    // }
+    @FXML
+    public void pedirCarta() {
+        if (jogo.acabou()) return;
+        turno();
+    }
 
+    @FXML
+    public void parar() {
+        if (jogo.acabou()) return;
+        jogo.getJogador().parar();
+        while (!jogo.acabou()) {
+            turno();
+        }
+    }
+
+    private void turno() {
+        jogo.distribuiCartaParaJogador(jogo.getJogador());
+        jogo.distribuiCartaParaJogador(jogo.getComputador());
+        atualizarTela();
+
+        if (jogo.acabou()) {
+            resultado.setText(jogo.resultado());
+        }
+    }
+
+    private void atualizarTela() {
+        mesaDoComputador.getChildren().clear();
+        mesaDoJogador.getChildren().clear();
+
+        for (Carta c : jogo.getComputador().getCartas()) {
+            mesaDoComputador.getChildren().add(criarImagemDaCarta(c));
+        }
+        for (Carta c : jogo.getJogador().getCartas()) {
+            mesaDoJogador.getChildren().add(criarImagemDaCarta(c));
+        }
+
+        pontosMesa.setText("Mesa: " + jogo.getComputador().getPontos());
+        pontosJogador.setText("Jogador: " + jogo.getJogador().getPontos());
+    }
+
+    private ImageView criarImagemDaCarta(Carta carta) {
+        Image img = new Image(getClass().getResourceAsStream(carta.imagePath()));
+        return new ImageView(img);
+    }
 }
